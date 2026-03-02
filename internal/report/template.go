@@ -16,6 +16,8 @@ tokens: {{.Tokens}}
 requests: {{.Requests}}
 top_models: [{{range $i, $m := .TopModels}}{{if $i}}, {{end}}"{{$m}}"{{end}}]
 ---
+> [!abstract] **Breadcrumbs**
+> [[00 - Map - Contents/Index|🏠 Central Command]] / [[10 - AI Related/Index|🚀 AI Related]] / [[10 - AI Related/OpenRouter/OpenRouter|🤖 OpenRouter]]
 # 🤖 Reporte: {{.FormattedDate}}
 
 > [!insight] **AI Summary**
