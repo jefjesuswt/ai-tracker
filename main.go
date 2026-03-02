@@ -22,11 +22,10 @@ func escapeGitPath(path string) string {
 }
 
 func main() {
-	// 1. Cargar entorno
 	log.Println("⚙️ [INIT] Cargando variables de entorno...")
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("❌ [FATAL] Error cargando .env: %v", err)
+    	log.Println("ℹ️ [INFO] No se encontró archivo .env, leyendo variables de entorno del sistema...")
 	}
 
 	managementKey := os.Getenv("MANAGEMENT_KEY")

@@ -1,0 +1,42 @@
+name: Deploy AI Tracker Binary
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.0"
+
+      - name: Compilar binario estático
+        run: |
+          # CGO_ENABLED=0 asegura que el binario no dependa de librerías en C del servidor
+          # -ldflags="-w -s" elimina información de debug para que el archivo pese la mitad
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o ai-tracker main.go
+
+      - name: Enviar binario al VPS vía SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: jeffrey
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "ai-tracker"
+          target: "/home/jeffrey/ai-tracker-app/"
+
+      - name: Dar permisos de ejecución
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: jeffrey
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            chmod +x /home/jeffrey/ai-tracker-app/ai-tracker
