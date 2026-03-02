@@ -130,7 +130,24 @@ func (s *Syncer) processMonthlies(monthlyData map[string][]openrouter.ActivityIt
 	log.Println("--------------------------------------------------")
 	log.Println("🔄 [SYNC] Iniciando fase de actualización Mensual...")
 
+	currentMonth := time.Now().UTC().Format("2006-01")
+
 	for monthStr, acts := range monthlyData {
+		vaultPath := fmt.Sprintf("%s/Months/%s.md", s.obsidianBasePath, monthStr)
+
+		if monthStr != currentMonth {
+			sha, err := s.gitClient.GetFileSha(vaultPath)
+			if err != nil {
+				log.Printf("❌ [ERROR] Falló la verificación de SHA para %s: %v", vaultPath, err)
+				continue
+			}
+
+			if sha != "" && len(sha) == 40 {
+				log.Printf("⏭️  [MONTHLY] El mes %s ya está cerrado y guardado. Saltando...", monthStr)
+				continue
+			}
+		}
+
 		log.Printf("📅 [MONTHLY] Procesando mes: %s (%d registros acumulados)", monthStr, len(acts))
 
 		parsedMonth, err := time.Parse("2006-01", monthStr)
@@ -156,10 +173,7 @@ func (s *Syncer) processMonthlies(monthlyData map[string][]openrouter.ActivityIt
 			continue
 		}
 
-		vaultPath := fmt.Sprintf("%s/Months/%s.md", s.obsidianBasePath, monthStr)
-
 		log.Printf("☁️  [GIT] Sobreescribiendo %s.md en Forgejo/GitHub...", monthStr)
-		// FIX PRINCIPAL: Pasamos la ruta directamente a PushFile
 		err = s.gitClient.PushFile(vaultPath, markdownStr, fmt.Sprintf("🤖 Bot: Update Monthly AI Log for %s", monthStr))
 		if err != nil {
 			log.Printf("❌ [ERROR] Push fallido para el mes %s: %v", monthStr, err)
